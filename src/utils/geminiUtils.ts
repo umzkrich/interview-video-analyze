@@ -1,6 +1,7 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { GoogleAIFileManager } from '@google/generative-ai/server';
 import { GEMINI_INPUT_PRICE, GEMINI_OUTPUT_PRICE, GEMINI_MODEL } from '@/config/constants';
+import { generateSystemPrompt, generateAnalysisPrompt } from '@/utils/promptUtils';
 
 // Gemini client initialization
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
@@ -14,40 +15,6 @@ export function calculateGeminiCost(inputTokens: number, outputTokens: number): 
   const outputCost = outputTokens * GEMINI_OUTPUT_PRICE;
   
   return inputCost + outputCost;
-}
-
-/**
- * Generate system prompt for Gemini
- */
-export function generateGeminiSystemPrompt(): string {
-  return 'ユーザーから、人が写った動画の分析を頼まれます。人を特定することなく、一般的、客観的に動画の場面を分析してください。';
-}
-
-/**
- * Generate analysis prompt for Gemini
- */
-export function generateGeminiAnalysisPrompt(): string {
-  return `あなたは大学受験の面接官です。この面接を受けた受験生の動画を分析して、表情やジェスチャー、コミュニケーションの観点から一般的なフィードバックを日本語で提供してください。以下の項目について分析してください：
-
-1. 表情の分析（感情表現、目の表情、口元の表現）
-2. ジェスチャーの分析（手の動き、体の姿勢、頭の動き）
-3. コミュニケーション効果（聞き手への印象）
-
-それぞれの項目について、「良い点」と「改善点」をそれぞれ文章でまとめ、100点満点で「点数」を出してください。出力は次のマークダウン形式のxxxの部分を埋めるようにしてください。人物の顔認識や個人特定を避けるため、動画の分析は一般的な表情やジェスチャーに基づいて行ってください。
-
-## 動画分析結果
-### 1. 表情の分析
-- 良い点：xxx
-- 改善点：xxx
-- 点数：xxx
-### 2. ジェスチャーの分析
-- 良い点：xxx
-- 改善点：xxx
-- 点数：xxx
-### 3. コミュニケーション効果
-- 良い点：xxx
-- 改善点：xxx
-- 点数：xxx`;
 }
 
 /**
@@ -82,8 +49,8 @@ export async function analyzeVideoWithGemini(videoPath: string, mimeType: string
     // Generate content using the uploaded file
     const model = genAI.getGenerativeModel({ model: GEMINI_MODEL });
     
-    const systemPrompt = generateGeminiSystemPrompt();
-    const analysisPrompt = generateGeminiAnalysisPrompt();
+    const systemPrompt = generateSystemPrompt();
+    const analysisPrompt = generateAnalysisPrompt();
     
     const result = await model.generateContent([
       `${systemPrompt}\n\n${analysisPrompt}`,

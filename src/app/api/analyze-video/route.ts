@@ -6,8 +6,9 @@ import { AnalysisResponse } from '@/types';
 import { AIProvider } from '@/config/constants';
 import { validateFile } from '@/utils/fileUtils';
 import { extractFramesFromVideo, encodeImageToBase64, cleanupTempFiles } from '@/utils/videoUtils';
-import { calculateCost, generateAnalysisPrompt, generateSystemPrompt } from '@/utils/openaiUtils';
+import { calculateCost } from '@/utils/openaiUtils';
 import { analyzeVideoWithGemini, calculateGeminiCost } from '@/utils/geminiUtils';
+import { generateSystemPrompt, generateAnalysisPrompt } from '@/utils/promptUtils';
 import { GPT4O_MODEL, MAX_TOKENS, TEMPERATURE, TEMP_FILE_PREFIX, ALLOWED_FILE_NAME_CHARS } from '@/config/constants';
 
 export async function POST(request: NextRequest): Promise<NextResponse<AnalysisResponse>> {
