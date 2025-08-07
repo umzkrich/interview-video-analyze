@@ -5,15 +5,18 @@ import {
   AnalysisResult,
   ApiResponse
 } from '@/types';
+import { AIProvider } from '@/config/constants';
 import { validateFile } from '@/utils/fileUtils';
 import FileUpload from '@/components/FileUpload';
 import AnalysisButton from '@/components/AnalysisButton';
 import AnalysisResults from '@/components/AnalysisResults';
+import ModelSelector from '@/components/ModelSelector';
 
 
 // Main component
 export default function VideoAnalysisApp() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedProvider, setSelectedProvider] = useState<AIProvider>('openai');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -48,6 +51,7 @@ export default function VideoAnalysisApp() {
     try {
       const formData = new FormData();
       formData.append('video', selectedFile);
+      formData.append('provider', selectedProvider);
 
       const response = await fetch('/api/analyze-video', {
         method: 'POST',
@@ -90,9 +94,16 @@ export default function VideoAnalysisApp() {
             動画分析
           </h1>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            ChatGPT-4oを使用して動画を分析し、改善点などを提供します
+            AIを使用して動画を分析し、改善点などを提供します
           </p>
         </header>
+
+        {/* Model Selection */}
+        <ModelSelector
+          selectedProvider={selectedProvider}
+          onProviderChange={setSelectedProvider}
+          disabled={isAnalyzing}
+        />
 
         {/* File Upload */}
         <FileUpload

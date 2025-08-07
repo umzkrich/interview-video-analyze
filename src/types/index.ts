@@ -1,9 +1,12 @@
+import { AIProvider } from '@/config/constants';
+
 // 共通型定義
 export interface CostInfo {
   totalCost: number;
   inputTokens: number;
   outputTokens: number;
   totalTokens: number;
+  provider?: AIProvider;
 }
 
 // OpenAI関連の型定義
@@ -11,6 +14,13 @@ export interface OpenAIUsage {
   prompt_tokens: number;
   completion_tokens: number;
   total_tokens: number;
+}
+
+// Gemini関連の型定義
+export interface GeminiUsage {
+  inputTokens: number;
+  outputTokens: number;
+  totalTokens: number;
 }
 
 // API レスポンス型（サーバーサイド用）
