@@ -6,7 +6,21 @@ import path from 'path';
 const execAsync = promisify(exec);
 
 /**
- * Extract frames from video using ffmpeg
+ * Get video duration in seconds using ffmpeg
+ */
+export async function getVideoDuration(videoPath: string): Promise<number> {
+  try {
+    const { stdout } = await execAsync(`ffprobe -v quiet -show_entries format=duration -of csv=p=0 "${videoPath}"`);
+    const duration = parseFloat(stdout.trim());
+    return Math.ceil(duration); // Round up to nearest second
+  } catch (error) {
+    console.error('Error getting video duration:', error);
+    throw new Error('Failed to get video duration');
+  }
+}
+
+/**
+ * Extract frames from video using ffmpeg (1 frame per second)
  */
 export async function extractFramesFromVideo(videoPath: string): Promise<string[]> {
   const outputDir = path.join(process.cwd(), 'public', 'temp_frames');
@@ -16,8 +30,14 @@ export async function extractFramesFromVideo(videoPath: string): Promise<string[
     // Create temp directory
     await execAsync(`mkdir -p "${outputDir}"`);
     
-    // Extract 3 frames from the video (beginning, middle, end)
-    await execAsync(`ffmpeg -i "${videoPath}" -vf "select='eq(pict_type,I)*not(mod(n,30))',scale=512:512" -frames:v 3 "${framePattern}" -y`);
+    // Get video duration to determine frame count
+    const duration = await getVideoDuration(videoPath);
+    const maxFrames = Math.min(duration, 30); // Cap at 30 frames to avoid excessive API costs
+    
+    console.log(`Video duration: ${duration}s, extracting ${maxFrames} frames`);
+    
+    // Extract frames at 1fps (1 frame per second)
+    await execAsync(`ffmpeg -i "${videoPath}" -vf "fps=1,scale=512:512" -frames:v ${maxFrames} "${framePattern}" -y`);
     
     // Get the generated frame files
     const { stdout } = await execAsync(`ls "${outputDir}"/frame_*.jpg`);

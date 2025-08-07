@@ -2,6 +2,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import { GoogleAIFileManager } from '@google/generative-ai/server';
 import { GEMINI_INPUT_PRICE, GEMINI_OUTPUT_PRICE, GEMINI_MODEL } from '@/config/constants';
 import { generateSystemPrompt, generateAnalysisPrompt } from '@/utils/promptUtils';
+import { getVideoDuration } from '@/utils/videoUtils';
 
 // Gemini client initialization
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
@@ -69,8 +70,18 @@ export async function analyzeVideoWithGemini(videoPath: string, mimeType: string
     await fileManager.deleteFile(uploadResult.file.name);
 
     // Estimate token usage (Gemini doesn't provide exact counts)
-    const inputTokens = Math.ceil((systemPrompt.length + analysisPrompt.length) / 4);
+    // Text tokens
+    const textTokens = Math.ceil((systemPrompt.length + analysisPrompt.length) / 4);
+    
+    // Video tokens: approximately 258 tokens per second of video
+    // This is based on Gemini's internal frame processing
+    const videoDuration = await getVideoDuration(videoPath);
+    const videoTokens = Math.ceil(videoDuration * 258);
+    
+    const inputTokens = textTokens + videoTokens;
     const outputTokens = Math.ceil(analysis.length / 4);
+    
+    console.log(`Gemini token calculation: text=${textTokens}, video=${videoTokens} (${videoDuration}s), output=${outputTokens}`);
 
     return {
       analysis,

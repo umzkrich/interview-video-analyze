@@ -34,7 +34,7 @@ export const AI_PROVIDERS = [
 // 動画処理関連の定数
 export const TEMP_FRAMES_DIR = 'public/temp_frames';
 export const FRAME_PATTERN = 'frame_%03d.jpg';
-export const FRAMES_COUNT = 20; // Extract 10 frames from video
+export const MAX_FRAMES = 30; // Maximum frames to extract (to control API costs)
 export const FRAME_SCALE = '512:512';
 
 // ファイル名パターン
